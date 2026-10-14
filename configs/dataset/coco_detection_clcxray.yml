@@ -1,0 +1,50 @@
+task: detection
+
+evaluator:
+  type: CocoEvaluator
+  iou_types: ['bbox']
+
+num_classes: 12
+remap_mscoco_category: False
+use_amp: True
+
+train_dataloader:
+  type: DataLoader
+  dataset:
+    type: CocoDetection
+    img_folder: ./dataset/CLCXray/train2017
+    ann_file: ./dataset/CLCXray/annotations/instances_train2017.json
+    return_masks: False
+    transforms:
+      type: Compose
+      ops:
+        - { type: RandomHorizontalFlip }
+        - { type: Resize, size: [640, 640] }
+        - { type: ConvertPILImage, dtype: float32, scale: True }
+        - { type: ConvertBoxes, fmt: cxcywh, normalize: True }
+  shuffle: True
+  total_batch_size: 4
+  num_workers: 2
+  drop_last: True
+  collate_fn:
+    type: BatchImageCollateFunction
+
+val_dataloader:
+  type: DataLoader
+  dataset:
+    type: CocoDetection
+    img_folder: ./dataset/CLCXray/val2017
+    ann_file: ./dataset/CLCXray/annotations/instances_val2017.json
+    return_masks: False
+    transforms:
+      type: Compose
+      ops:
+        - { type: Resize, size: [640, 640] }
+        - { type: ConvertPILImage, dtype: float32, scale: True }
+        - { type: ConvertBoxes, fmt: cxcywh, normalize: True }
+  shuffle: False
+  total_batch_size: 4
+  num_workers: 2
+  drop_last: False
+  collate_fn:
+    type: BatchImageCollateFunction

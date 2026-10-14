@@ -1,0 +1,84 @@
+# Example: python tools/train.py -c configs/rtdetr/rtdetr_r18vd_opixray.yml --update output_dir=./output/rtdetr_r18vd_opixray_msf
+__include__: [
+  '../dataset/coco_detection_opixray.yml',
+  '../runtime.yml',
+  './include/dataloader.yml',
+  './include/optimizer.yml',
+  './include/rtdetr_r50vd.yml',
+]
+
+# ===== 预训练权重（必须在模型定义之后加载） =====
+#pretrained: https://github.com/lyuwenyu/storage/releases/download/v0.1/rtdetr_r50vd_5e-8461d7c8.pth
+resume: False
+
+
+num_classes: 6
+
+output_dir: ./output/rtdetr_r18vd_opixray
+
+
+PResNet:
+  depth: 18
+  freeze_at: -1
+  freeze_norm: False
+  pretrained: True
+
+
+HybridEncoder:
+  in_channels: [128, 256, 512]
+  hidden_dim: 256
+  expansion: 0.5
+  use_csgmsf: True
+  use_mcd_adapter: True
+  mcd_levels: [ 0 ]
+
+RTDETRTransformer:
+  num_layers: 3
+  num_classes: 6
+
+# ===== 覆盖训练参数 =====
+train_dataloader:
+#  dataset:
+#    transforms:
+#      ops:
+#        - {type: RandomHorizontalFlip}
+#        - {type: Resize, size: [640, 640]}
+#        - {type: ConvertPILImage, dtype: 'float32', scale: True}
+#        - {type: ConvertBoxes, fmt: 'cxcywh', normalize: True}
+#  shuffle: True
+  num_workers: 2
+  total_batch_size: 4
+#  drop_last: True
+#  collate_fn:
+#    type: BatchImageCollateFunction
+
+val_dataloader:
+#  dataset:
+#    transforms:
+#      ops:
+#        - {type: Resize, size: [640, 640]}
+#        - {type: ConvertPILImage, dtype: 'float32', scale: True}
+#  shuffle: False
+  total_batch_size: 4
+  num_workers: 2
+#  drop_last: False
+#  collate_fn:
+#    type: BatchImageCollateFunction
+
+optimizer:
+  type: AdamW
+  params: 
+    - 
+      params: '^(?=.*backbone)(?=.*norm|bn).*$'
+      weight_decay: 0.
+      lr: 0.00001
+    - 
+      params: '^(?=.*backbone)(?!.*norm|bn).*$'
+      lr: 0.00001
+    - 
+      params: '^(?=.*(?:encoder|decoder))(?=.*(?:norm|bn|bias)).*$'
+      weight_decay: 0.
+
+  lr: 0.0001
+  betas: [0.9, 0.999]
+  weight_decay: 0.0001

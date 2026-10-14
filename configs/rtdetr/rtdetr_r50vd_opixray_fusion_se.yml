@@ -1,0 +1,87 @@
+__include__: [
+  '../dataset/coco_detection_opixray.yml',
+  '../runtime.yml',
+  './include/dataloader.yml',
+  './include/optimizer.yml',
+  './include/rtdetr_r50vd_fusion_compare.yml',
+]
+
+
+# ===== 预训练权重 =====
+#pretrained: https://github.com/lyuwenyu/storage/releases/download/v0.1/rtdetr_r50vd_5e-8461d7c8.pth
+resume: False
+
+
+# ===== SE 融合对比实验独立输出目录 =====
+output_dir: ./output/rtdetr_r50vd_opixray_fusion_se
+
+
+# ===== 覆盖模型参数 =====
+HybridEncoder:
+  fusion_type: 'se'
+
+
+# ===== 覆盖训练参数 =====
+train_dataloader:
+#  dataset:
+#    transforms:
+#      ops:
+#        - {type: RandomHorizontalFlip}
+#        - {type: Resize, size: [640, 640]}
+#        - {type: ConvertPILImage, dtype: 'float32', scale: True}
+#        - {type: ConvertBoxes, fmt: 'cxcywh', normalize: True}
+#  shuffle: True
+#  num_workers: 2
+  total_batch_size: 4
+#  drop_last: True
+#  collate_fn:
+#    type: BatchImageCollateFunction
+
+
+val_dataloader:
+#  dataset:
+#    transforms:
+#      ops:
+#        - {type: Resize, size: [640, 640]}
+#        - {type: ConvertPILImage, dtype: 'float32', scale: True}
+#  shuffle: False
+  total_batch_size: 4
+  num_workers: 2
+#  drop_last: False
+#  collate_fn:
+#    type: BatchImageCollateFunction
+
+
+# ===== 训练参数：Epochs=100，AdamW =====
+epoches: 100
+clip_max_norm: 0.1
+
+
+optimizer:
+  type: AdamW
+  params:
+    -
+      params: '^(?=.*backbone)(?!.*(?:norm|bn)).*$'
+      lr: 0.00001
+    -
+      params: '^(?=.*backbone)(?=.*(?:norm|bn)).*$'
+      weight_decay: 0.
+      lr: 0.00001
+    -
+      params: '^(?=.*(?:encoder|decoder))(?=.*(?:norm|bn|bias)).*$'
+      weight_decay: 0.
+
+  lr: 0.0001
+  betas: [0.9, 0.999]
+  weight_decay: 0.0001
+
+
+lr_scheduler:
+  type: MultiStepLR
+  milestones: [90]
+  gamma: 0.1
+
+
+lr_warmup_scheduler:
+  type: LinearWarmup
+  warmup_duration: 2000

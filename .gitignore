@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Training outputs and checkpoints
+output/
+runs/
+logs/
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.engine
+*.trt
+
+# Datasets (download separately; don't commit image files)
+dataset/*
+!dataset/readme.md
+
+# Local system files
+.DS_Store
+.idea/
+.vscode/
