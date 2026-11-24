@@ -1,5 +1,5 @@
 __include__: [
-  '../dataset/coco_detection_opixray.yml',   # ← OPIXray 数据集（5类）
+  '../dataset/coco_detection.yml',   # ← OPIXray 数据集（5类）
   '../runtime.yml',
   './include/dataloader.yml',      # ← 加上！包含数据增强 + 多尺度
   './include/optimizer.yml',
